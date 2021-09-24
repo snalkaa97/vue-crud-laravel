@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import CustomerTable from "@/components/CustomerTable.vue";
 import CustomerForm from "@/components/CustomerForm.vue";
 
@@ -44,40 +45,59 @@ export default {
 	},
 	data() {
 		return {
-			customers: [
-				{
-					id: 1,
-					name: "Bambang",
-					email: "bambang@mail.com",
-					address: "Jl.Kenanga",
-				},
-				{
-					id: 2,
-					name: "Dika",
-					email: "dika@mail.com",
-					address: "Jl.Mangga",
-				},
-				{
-					id: 3,
-					name: "Agus",
-					email: "agus@mail.com",
-					address: "Jl.Mataram",
-				},
-			],
+			customers: [],
+			// customers: [
+			// 	{
+			// 		id: 1,
+			// 		name: "Bambang",
+			// 		email: "bambang@mail.com",
+			// 		address: "Jl.Kenanga",
+			// 	},
+			// 	{
+			// 		id: 2,
+			// 		name: "Dika",
+			// 		email: "dika@mail.com",
+			// 		address: "Jl.Mangga",
+			// 	},
+			// 	{
+			// 		id: 3,
+			// 		name: "Agus",
+			// 		email: "agus@mail.com",
+			// 		address: "Jl.Mataram",
+			// 	},
+			// ],
 		};
+	},
+	created() {
+		axios.get(`http://vue-laravel.local/api/customers`).then((response) => {
+			this.customers = response.data.data;
+		});
 	},
 	methods: {
 		addCustomer(customer) {
-			this.customers.push(customer);
+			axios
+				.post("http://vue-laravel.local/api/customers", customer)
+				.then((response) => {
+					console.log(response);
+					this.customers = [...this.customers, response.data.data];
+				});
 		},
+
 		editCustomer(id, data) {
-			this.customers = this.customers.map(function(customer) {
-				return customer.id === id ? data : customer;
-			});
+			axios
+				.put(`http://vue-laravel.local/api/customers/${id}`, data)
+				.then((response) => {
+					console.log(response.data.data);
+					this.customers = this.customers.map((customer) =>
+						customer.id === id ? data : customer
+					);
+				});
 		},
+
 		deleteCustomer(id) {
-			this.customers = this.customers.filter(function(customer) {
-				return customer.id !== id;
+			axios.delete(`http://vue-laravel.local/api/customers/${id}`).then(() => {
+				const customerId = this.customers.indexOf(id);
+				this.customers.splice(customerId, 1);
 			});
 		},
 	},
